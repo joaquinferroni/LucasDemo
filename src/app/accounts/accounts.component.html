@@ -1,0 +1,51 @@
+<div class="header">
+  <button mat-button (click)="backToUsers()"><-Back To Users</button>
+  <button mat-raised-button color="primary" (click)="newAccount()">New Account</button>
+</div>
+<div class="accounts-list">
+    <mat-card *ngFor="let a of accounts">
+        <mat-card-title>{{a.name}}
+            <div class="action-buttons">
+            <button mat-button color="primary" (click)="viewTransactions(a.id)">View Details</button>
+            <button mat-button (click)="addAmount()">Add Money</button>
+            <button mat-button>Withdraw</button>
+        </div>
+        </mat-card-title>
+        <mat-card-subtitle>Balance: {{a.balance|currency}}</mat-card-subtitle>
+        
+        <div *ngIf="selectedAccountId === a.id">
+            <mat-divider></mat-divider>
+            <div class="mat-elevation-z8">
+                <table mat-table [dataSource]="dataSource">
+              
+                  <!-- Type Column -->
+                  <ng-container matColumnDef="type">
+                    <th mat-header-cell *matHeaderCellDef> Type </th>
+                    <td mat-cell *matCellDef="let element"> {{element.type}} </td>
+                  </ng-container>
+              
+                  <!-- Amount Column -->
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef> Amount </th>
+                    <td mat-cell *matCellDef="let element"> {{element.amount}} </td>
+                  </ng-container>
+              
+                  <!-- Date Column -->
+                  <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef> Date </th>
+                    <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+                  </ng-container>
+              
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+              
+                <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+                               showFirstLastButtons 
+                               aria-label="Select page of periodic elements">
+                </mat-paginator>
+              </div>
+
+        </div>
+    </mat-card>
+    </div>
