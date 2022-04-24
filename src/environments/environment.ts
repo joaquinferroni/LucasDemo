@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  apiUrl:"https://demo-customer-api-fp5egpu5pq-ez.a.run.app/api"
+  apiUrl:"https://demo-customer-api-ef3apakoka-uc.a.run.app/v1"
 };
 
 /*
