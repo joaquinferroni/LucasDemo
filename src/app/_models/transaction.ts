@@ -1,16 +1,20 @@
 
 export class Transaction {
     id: string;
-    type: string;
+    transactionType: string;
+    type!:string;
     amount: number;
-    date: Date;
+    accountId: string;
+    time: Date;
     /**
      *
      */
-    constructor(_id:string,_type:string,_amount:number,_date:Date) {
+    constructor(_id:string,_type:string,_amount:number,_date:Date,_accountId:string) {
         this.id=_id;
-        this.type=_type;
+        this.transactionType=_type;
+        this.type = _type;
         this.amount=_amount;
-        this.date=_date;
+        this.accountId = _accountId;
+        this.time=_date;
     }
   }

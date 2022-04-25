@@ -16,12 +16,14 @@ import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { ModifyBalanceAccountComponent } from './modify-balance-account/modify-balance-account.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NotFoundComponent,
-    NewAccountComponent
+    NewAccountComponent,
+    ModifyBalanceAccountComponent
   ],
   imports: [
     BrowserModule,

@@ -1,7 +1,13 @@
-.accounts-list{
+.header{
     // width: fit-content;
-    // display: inline-flex;
+     display: flex;
 }
+.user-info{
+    margin-left:20px;
+    margin-bottom:0px;
+    margin-top:5px;
+}
+
 .mat-card{
     margin:10px;
     // flex-wrap: nowrap;

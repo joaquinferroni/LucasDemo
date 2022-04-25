@@ -10,11 +10,15 @@ export class AccountService {
 
   constructor(private http: HttpClient) { }
 
-  getAll(customerId:number):Observable<Account[]>{
+  getAll(customerId:string):Observable<Account[]>{
     return this.http.get<Account[]>(`/accounts/customers/${customerId}`);
   }
 
   post(account:Account):Observable<any>{
-    return this.http.post<any>(`/accounts`,account);
+    return this.http.post<any>(`/accounts`,{
+      customerId : account.customerId,
+      initial: account.balance,
+      name: account.name
+    });
   }
 }

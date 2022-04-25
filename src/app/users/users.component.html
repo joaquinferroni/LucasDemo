@@ -6,11 +6,6 @@
   <div class="mat-elevation-z8">
     <table mat-table [dataSource]="dataSource" matSort>
   
-      <!-- ID Column -->
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
-        <td mat-cell *matCellDef="let row"> {{row.id}} </td>
-      </ng-container>
   
       <!-- Surname Column -->
       <ng-container matColumnDef="surname">
@@ -28,7 +23,7 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> Actions </th>
         <td mat-cell *matCellDef="let row"> 
-            <button mat-stroked-button (click)="viewAccounts(row.id)">View Accounts</button>    
+            <button mat-stroked-button (click)="viewAccounts(row.customerId)">View Accounts</button>    
         </td>
       </ng-container>
   

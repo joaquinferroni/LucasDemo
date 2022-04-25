@@ -4,6 +4,7 @@ import {MatSort} from '@angular/material/sort';
 import {MatTableDataSource} from '@angular/material/table';
 import { Router } from '@angular/router';
 import { User } from '../_models/user';
+import { LoadingService } from '../_services/loading.service';
 import { UsersService } from '../_services/users.service';
 
 @Component({
@@ -13,7 +14,7 @@ import { UsersService } from '../_services/users.service';
 })
 export class UsersComponent implements OnInit,AfterViewInit {
 
-  displayedColumns: string[] = ['id', 'name', 'surname','actions'];
+  displayedColumns: string[] = ['name', 'surname','actions'];
   dataSource: MatTableDataSource<User>;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -21,9 +22,9 @@ export class UsersComponent implements OnInit,AfterViewInit {
   constructor(
     private router: Router
     ,private usersService: UsersService
+    ,private loadingService: LoadingService
     ) {
      const users = new Array<User>();
-     users.push(new User("8","test","fdsafsa",19));
      this.dataSource = new MatTableDataSource(users);
   }
   ngOnInit(): void {
@@ -36,8 +37,11 @@ export class UsersComponent implements OnInit,AfterViewInit {
   }
 
   loadUsers(){
+    this.loadingService.show();
     this.usersService.getAll().subscribe(users=>{
       this.dataSource = new MatTableDataSource(users);
+      localStorage.setItem("users", JSON.stringify(users));
+      this.loadingService.hide();
     })
   }
 

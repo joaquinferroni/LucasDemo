@@ -1,13 +1,19 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ModifyBalanceAccountComponent } from '../modify-balance-account/modify-balance-account.component';
 import { NewAccountComponent } from '../new-account/new-account.component';
 import { Account } from '../_models/account';
+import { CustomerAccountInformation } from '../_models/customerAccountInformation';
 import { Transaction } from '../_models/transaction';
+import { User } from '../_models/user';
+import { AccountService } from '../_services/account.service';
+import { CustomerAccountInformationService } from '../_services/customer-account-information.service';
 import { LoadingService } from '../_services/loading.service';
 import { NotificationService } from '../_services/notification.service';
+import { TransactionService } from '../_services/transaction.service';
 
 @Component({
   selector: 'app-accounts',
@@ -15,12 +21,12 @@ import { NotificationService } from '../_services/notification.service';
   styleUrls: ['./accounts.component.scss']
 })
 export class AccountsComponent implements OnInit,AfterViewInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
   displayedColumns: string[] = ['type', 'amount', 'date'];
   dataSource = new MatTableDataSource<Transaction>([]);
   selectedAccountId:string = "-1";
   accounts: Account[] = [];
-  customerId:number = 8;
+  customerId:string = "";
+  currentUser!: User;
 
   constructor(
     private loadingService:LoadingService
@@ -28,28 +34,30 @@ export class AccountsComponent implements OnInit,AfterViewInit {
     ,private dialog: MatDialog
     ,private router: Router
     ,private route: ActivatedRoute
+    ,private accountService: AccountService
+    ,private transactionService: TransactionService
+    ,private customerAccountInformationService: CustomerAccountInformationService
+    ,private cdRef: ChangeDetectorRef
     ) { }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
   }
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      this.customerId = params['customerId'];
-      console.log("cusomer: "+this.customerId);
+      this.customerId =  params['customerId'];
+      this.loadAccounts();
     });
-    this.accounts.push(new Account("1","Account 1",100,8));
-    this.accounts.push(new Account("12","Account 2",1100,1));
-    this.accounts.push(new Account("13","Account 3",2100,1));
-    this.accounts.push(new Account("14","Account 4",3100,1));
-    this.accounts.push(new Account("15","Account 5",4100,1));
-    this.accounts.push(new Account("16","Account 6",5100,8));
-    this.accounts.push(new Account("17","Account 7",6100,8));
-    this.accounts.push(new Account("18","Account 8",7100,8));
-    this.accounts.push(new Account("21","Account 11",8100,8));
-    this.accounts.push(new Account("31","Account 12",9100,8));
-    this.accounts.push(new Account("41","Account 13",100.78,8));
-    this.accounts=this.accounts.filter(a=>a.customerId==this.customerId);
+    
+    this.currentUser = (<User[]>JSON.parse(localStorage.getItem("users") ?? '[]'))
+                      .filter(u => u.customerId == this.customerId)[0];
+  }
+
+  loadAccounts(){
+    this.loadingService.show();
+    this.accountService.getAll(this.customerId).subscribe(accounts =>{
+      this.accounts = accounts ?? [];
+      this.loadingService.hide();
+    })
   }
 
   backToUsers(){
@@ -58,27 +66,82 @@ export class AccountsComponent implements OnInit,AfterViewInit {
 
   viewTransactions(accountId: string){
     this.loadingService.show();
-    setTimeout(() => {
+    this.customerAccountInformationService.getAll(accountId).subscribe(customerAccountInformation=>{
       this.selectedAccountId=accountId;
+      this.dataSource.data = customerAccountInformation?.transactions ?? [] ;
       this.loadingService.hide();
-    }, 1000);
+    })
+  }
+
+
+  hideTransactions(accountId: string){
+    this.selectedAccountId = "-1";
   }
 
   newAccount(){
     const dialogRef = this.dialog.open(NewAccountComponent, {
       width: '300px',
-    data: {name: 'this.name', animal: 'this.animal'},
+      data: {},
     });
 
     dialogRef.afterClosed().subscribe(account => {
       if(!account) return;
       console.log('The dialog was closed');
       account.customerId = this.customerId;
-      this.accounts.push(account);
-      this.notificationService.success("Account created successfuly");
+      this.loadingService.show();
+      this.accountService.post(account).subscribe(accountCreated=>{
+        this.accounts.push(accountCreated);
+        this.notificationService.success("Account created successfuly");
+        this.loadingService.hide();
+      })
     });
   }
-  addAmount(){
-    
+
+
+  addAmount(account: Account){
+    const dialogRef = this.dialog.open(ModifyBalanceAccountComponent, {
+      width: '300px',
+      data: {addBalance:true, currentBalance: account.balance},
+    });
+
+    dialogRef.afterClosed().subscribe(valueToAdd => {
+      if(!valueToAdd) return;
+      this.loadingService.show();
+      const transaction = new Transaction('','DEPOSIT',valueToAdd,new Date(),account.id);
+      this.transactionService.post(transaction).subscribe(_=>{
+        if(this.selectedAccountId === account.id){
+          this.dataSource.data.push(transaction);
+          const transactions = this.dataSource.data;
+          this.dataSource.data = transactions;
+          
+        }
+        this.loadingService.hide();
+        account.balance += valueToAdd;
+        this.notificationService.success("Balance modified successfuly");
+      })
+    });
+  }
+
+  reduceAmount(account:Account){
+    const dialogRef = this.dialog.open(ModifyBalanceAccountComponent, {
+      width: '300px',
+      data: {addBalance:false, currentBalance: account.balance},
+    });
+
+    dialogRef.afterClosed().subscribe(valueToReduce => {
+      if(!valueToReduce) return;
+      this.loadingService.show();
+      const transaction = new Transaction('','WITHDRAW',valueToReduce,new Date(),account.id);
+      this.transactionService.post(transaction).subscribe(_=>{
+        if(this.selectedAccountId === account.id){
+          this.dataSource.data.push(transaction);
+          const transactions = this.dataSource.data;
+          this.dataSource.data = transactions;
+        }
+        this.loadingService.hide();
+        account.balance -= valueToReduce;
+        this.notificationService.success("Balance modified successfuly");
+      })
+    });
   }
 }

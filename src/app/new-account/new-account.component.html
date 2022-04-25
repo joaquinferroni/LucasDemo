@@ -2,7 +2,7 @@
 <div mat-dialog-content>
   <mat-form-field appearance="fill">
     <mat-label>Name</mat-label>
-    <input matInput [(ngModel)]="newAccount.name">
+    <input matInput [(ngModel)]="newAccount.name" required>
   </mat-form-field>
   <mat-form-field appearance="fill">
     <mat-label>Initial balance</mat-label>
@@ -11,5 +11,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Cancel</button>
-  <button mat-button [mat-dialog-close]="newAccount" cdkFocusInitial>Ok</button>
+  <button mat-button (click)="onOkClick()" cdkFocusInitial>Ok</button>
 </div>

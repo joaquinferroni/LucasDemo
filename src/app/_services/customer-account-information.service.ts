@@ -10,7 +10,7 @@ export class CustomerAccountInformationService {
 
   constructor(private http: HttpClient) { }
 
-  getAll(accountId:number):Observable<CustomerAccountInformation>{
-    return this.http.get<CustomerAccountInformation>(`/accounts/${accountId}/transactions`);
+  getAll(accountId:string):Observable<CustomerAccountInformation>{
+    return this.http.get<CustomerAccountInformation>(`/transactions/accounts/${accountId}`);
   }
 }
